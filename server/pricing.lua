@@ -10,7 +10,7 @@ function GetButcherItemQuote(item, siteId)
         or tonumber(ButcherPricing.categories[animal.category])
     if not basePrice then return nil end
 
-    local quality = math.max(1, math.min(3, tonumber(item.quality) or 1))
+    local quality = math.max(0, math.min(2, tonumber(item.quality) or 0))
     local qualityMultiplier = tonumber(ButcherPricing.qualityMultipliers[quality]) or 1.0
     local stateKey = item.isSkinned and 'skinned' or 'unskinned'
     local stateMultiplier = tonumber(ButcherPricing.stateMultipliers[stateKey]) or 1.0
@@ -30,6 +30,9 @@ function GetButcherItemQuote(item, siteId)
     }
 end
 
+---@param cargo table
+---@param siteId string
+---@return table
 function BuildButcherQuote(cargo, siteId)
     local quote = { wagonId = cargo.wagonId, used = cargo.used, capacity = cargo.capacity, items = {}, total = 0 }
     for _, item in ipairs(cargo.items or {}) do
