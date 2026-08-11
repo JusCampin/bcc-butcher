@@ -15,7 +15,7 @@ local function createLocation(siteId, site)
         local hash = loadModel(site.npc.model)
         if hash then
             local coords = site.npc.coords
-            local ped = CreatePed(hash, coords.x, coords.y, coords.z, coords.w, false, false)
+            local ped = CreatePed(hash, coords.x, coords.y, coords.z-1, coords.w, false, false, false, false)
             if ped and ped ~= 0 then
                 Citizen.InvokeNative(0x283978A15512B2FE, ped, true)
                 SetEntityInvincible(ped, true)
@@ -30,6 +30,8 @@ local function createLocation(siteId, site)
     local prompt = UiPromptRegisterBegin()
     UiPromptSetControlAction(prompt, Config.promptControl)
     UiPromptSetText(prompt, CreateVarString(10, 'LITERAL_STRING', _U('prompt')))
+    UiPromptSetVisible(prompt, true)
+    UiPromptSetEnabled(prompt, true)
     UiPromptSetHoldMode(prompt, Config.promptHoldMs)
     Citizen.InvokeNative(0xAE84C5EE2C384FB3, prompt, site.coords.x, site.coords.y, site.coords.z)
     Citizen.InvokeNative(0x0C718001B77CA468, prompt, Config.interactionDistance)
@@ -50,7 +52,11 @@ CreateThread(function()
         Wait(0)
         for _, prompt in ipairs(prompts) do
             if UiPromptHasHoldModeCompleted(prompt.handle) then
-                OpenButcherMenu(prompt.siteId)
+                local accepted = OpenButcherMenu(prompt.siteId)
+                if accepted and Config.development and Config.development.enabled then
+                    DBG:Info(('Opening butcher menu at site: %s'):format(prompt.siteId))
+                end
+                Wait(500)
             end
         end
     end
