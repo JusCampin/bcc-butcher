@@ -5,6 +5,7 @@ function _U(key, ...)
     local fallback = Locales.en_lang or {}
     local value = locale[key] or fallback[key] or key
     if select('#', ...) == 0 then return value end
+
     local success, formatted = pcall(string.format, value, ...)
     return success and formatted or value
 end
