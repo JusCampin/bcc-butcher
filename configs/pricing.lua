@@ -6,11 +6,12 @@ ButcherPricing = {
         large = 4.00,
         massive = 7.00,
         bird = 0.75,
+        fish = 1.00,
     },
     qualityMultipliers = {
-        [1] = 0.50,
-        [2] = 0.75,
-        [3] = 1.00,
+        [0] = 0.50,
+        [1] = 0.75,
+        [2] = 1.00,
     },
     stateMultipliers = {
         unskinned = 1.00,
