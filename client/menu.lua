@@ -16,11 +16,18 @@ local function activeWagonId()
     return type(wagon) == 'table' and tonumber(wagon.id) or nil
 end
 
+local function refreshCarcassQuality(carcass)
+    pcall(function()
+        exports['bcc-hunting-wagon']:RefreshCarcassQuality(carcass)
+    end)
+end
+
 local function carriedCarcassNetId()
     local carcass = Citizen.InvokeNative(0xD806CD2A4F2C2996, PlayerPedId())
     if not carcass or carcass == 0 or not DoesEntityExist(carcass) or not IsEntityDead(carcass) then
         return nil
     end
+    refreshCarcassQuality(carcass)
     local netId = NetworkGetNetworkIdFromEntity(carcass)
     return netId and netId ~= 0 and netId or nil
 end
@@ -38,6 +45,7 @@ local function horseCarcassData()
         then
             return
         end
+        refreshCarcassQuality(carcass)
         local netId = NetworkGetNetworkIdFromEntity(carcass)
         if netId and netId ~= 0 and not seen[netId] then
             seen[netId] = true
