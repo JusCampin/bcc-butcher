@@ -6,27 +6,54 @@ function GetButcherItemQuote(item, siteId)
     local animal = exports['bcc-animal-data']:GetAnimal(item.modelHash)
     if type(animal) ~= 'table' or animal.butcherable == false then return nil end
 
-    local basePrice = tonumber(ButcherPricing.animals[animal.model])
-        or tonumber(ButcherPricing.categories[animal.category])
-    if not basePrice then return nil end
+    local model = string.lower(tostring(animal.model or ''))
+    local category = tostring(animal.category or '')
+    local site = ButcherLocations[siteId]
+    if type(site) ~= 'table'
+        or ButcherPricing.refusedCategories[category] == true
+        or ButcherPricing.refusedAnimals[model] == true
+        or (type(site.refusedAnimals) == 'table' and site.refusedAnimals[model] == true)
+    then
+        return nil
+    end
+
+    local override = ButcherPricing.animals[model]
+    if type(override) == 'table' and override.refused == true then return nil end
+    local basePrice = type(override) == 'table' and tonumber(override.basePrice)
+        or tonumber(ButcherPricing.categories[category])
+    if not basePrice or basePrice <= 0 then return nil end
 
     local quality = math.max(0, math.min(2, tonumber(item.quality) or 0))
     local qualityMultiplier = tonumber(ButcherPricing.qualityMultipliers[quality]) or 1.0
     local stateKey = item.isSkinned and 'skinned' or 'unskinned'
     local stateMultiplier = tonumber(ButcherPricing.stateMultipliers[stateKey]) or 1.0
-    local site = ButcherLocations[siteId]
     local siteMultiplier = tonumber(site and site.priceMultiplier) or 1.0
+    local categoryMultiplier = type(site.categoryMultipliers) == 'table'
+        and tonumber(site.categoryMultipliers[category]) or 1.0
+    if categoryMultiplier <= 0 then return nil end
+    local legendaryMultiplier = animal.legendary == true
+        and (tonumber(ButcherPricing.legendaryMultiplier) or 1.0) or 1.0
+    local price = roundCurrency(
+        basePrice
+        * qualityMultiplier
+        * stateMultiplier
+        * siteMultiplier
+        * categoryMultiplier
+        * legendaryMultiplier
+    )
+    if price < (tonumber(ButcherPricing.minimumPayout) or 0.01) then return nil end
 
     return {
         id = tonumber(item.id),
         modelHash = tonumber(item.modelHash),
         animal = animal.model,
         label = animal.label,
-        category = animal.category,
+        category = category,
+        legendary = animal.legendary == true,
         units = math.max(1, tonumber(item.units) or 1),
         quality = quality,
         isSkinned = item.isSkinned == true,
-        price = roundCurrency(basePrice * qualityMultiplier * stateMultiplier * siteMultiplier),
+        price = price,
     }
 end
 
