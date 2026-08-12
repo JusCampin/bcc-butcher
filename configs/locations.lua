@@ -12,5 +12,13 @@ ButcherLocations = {
             sprite = 'blip_shop_butcher',
         },
         priceMultiplier = 1.0,
+        -- Optional economy controls for this butcher. Missing categories use
+        -- 1.0; setting a category to 0 refuses it at this location.
+        categoryMultipliers = {
+            -- fish = 1.10,
+        },
+        refusedAnimals = {
+            -- a_c_bear_01 = true,
+        },
     },
 }
